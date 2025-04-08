@@ -7,17 +7,47 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const OUT_FILE = "./output/output.pdf";
-const fontPath = path.join(__dirname, '..', 'font', 'Roboto-Regular.ttf');
-
 function createPDF(text) {
+    // Tạo thư mục output nếu chưa tồn tại
+    const outputDir = path.join(__dirname, '..', '..', 'output');
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    // Tạo tên file duy nhất với timestamp
+    const timestamp = new Date().getTime();
+    const fileName = `output_${timestamp}.pdf`;
+    const outputPath = path.join(outputDir, fileName);
+    
     const doc = new PDFDocument();
-    doc.pipe(fs.createWriteStream(OUT_FILE));
-    doc.font(fontPath)
-        .fontSize(14)
-        .text(text, 100, 100);
-    doc.end();
-    return OUT_FILE;
+    const stream = fs.createWriteStream(outputPath);
+    
+    // Xử lý sự kiện khi stream đóng
+    return new Promise((resolve, reject) => {
+        stream.on('finish', () => {
+            resolve(outputPath);
+        });
+        
+        stream.on('error', (err) => {
+            reject(err);
+        });
+        
+        doc.pipe(stream);
+        
+        const fontPath = path.join(__dirname, '..', 'font', 'Roboto-Regular.ttf');
+        
+        // Kiểm tra font tồn tại
+        if (fs.existsSync(fontPath)) {
+            doc.font(fontPath);
+        } else {
+            console.warn("Font file not found, using default font");
+        }
+        
+        doc.fontSize(14)
+           .text(text, 100, 100);
+        
+        doc.end();
+    });
 }
 
 export { createPDF };
