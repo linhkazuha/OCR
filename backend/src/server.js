@@ -4,6 +4,10 @@
 import cors from "cors";
 import express from 'express';
 import routes from "./routes/index.js";
+import { ocrWorker } from "./workers/worker.ocr.js";
+import { translateWorker } from "./workers/worker.translate.js";
+import { pdfWorker } from "./workers/worker.pdf.js";
+import 'dotenv/config.js';
 
 const app = express();
 const port = 3001;
@@ -15,6 +19,9 @@ app.get('/', (req, res) => {
     res.send('hehe');
 });
 
+ocrWorker();
+translateWorker();
+pdfWorker();
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

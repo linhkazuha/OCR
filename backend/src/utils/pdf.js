@@ -7,7 +7,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-function createPDF(text) {
+function createPDF(text, file_Name) {
     // Tạo thư mục output nếu chưa tồn tại
     const outputDir = path.join(__dirname, '..', '..', 'output');
     if (!fs.existsSync(outputDir)) {
@@ -16,7 +16,7 @@ function createPDF(text) {
     
     // Tạo tên file duy nhất với timestamp
     const timestamp = new Date().getTime();
-    const fileName = `output_${timestamp}.pdf`;
+    const fileName = `${file_Name}_${timestamp}.pdf`;
     const outputPath = path.join(outputDir, fileName);
     
     const doc = new PDFDocument();
