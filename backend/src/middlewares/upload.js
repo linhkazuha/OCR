@@ -23,7 +23,7 @@ let storage = multer.diskStorage({
 let uploadFile = multer({
     storage: storage,
     limits: { fileSize: maxSize },
-}).single("file");
+}).array("files");
 
 // let uploadFileMiddleware = util.promisify(uploadFile);
 

@@ -1,5 +1,6 @@
 import amqplib from "amqplib";
 import { translate } from "../utils/translate.js";
+import 'dotenv/config';
 
 const Translate_QUEUE = process.env.Translate_QUEUE_NAME;
 const PDF_QUEUE = process.env.PDF_QUEUE_NAME;
@@ -19,13 +20,13 @@ export const translateWorker = async () => {
     channel.consume(Translate_QUEUE, async (msg) => {
       console.log(msg);
       if (msg !== null) {
-        const { text, fileName } = JSON.parse(msg.content.toString());
+        const { text, fileName, taskId } = JSON.parse(msg.content.toString());
 
         const translatedText = await translate(text);
         
         // await delay(5000);
         
-        channel.sendToQueue(PDF_QUEUE, Buffer.from(JSON.stringify({ translatedText, fileName })), {
+        channel.sendToQueue(PDF_QUEUE, Buffer.from(JSON.stringify({ translatedText, fileName, taskId })), {
           persistent: true,
         });
         

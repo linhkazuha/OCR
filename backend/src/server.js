@@ -7,7 +7,7 @@ import routes from "./routes/index.js";
 import { ocrWorker } from "./workers/worker.ocr.js";
 import { translateWorker } from "./workers/worker.translate.js";
 import { pdfWorker } from "./workers/worker.pdf.js";
-import 'dotenv/config.js';
+import 'dotenv/config';
 
 const app = express();
 const port = 3001;

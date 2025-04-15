@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import amqplib from 'amqplib';
 import 'dotenv/config';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,8 +47,9 @@ const upload = async (req, res) => {
                 message: `File upload error: ${err.message}`,
             });
         }
-        if (!req.file) {
-            return res.status(400).send({ message: "Please upload a file!" });
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).send({ message: "Please upload at least one file!" });
         }
 
         try {
@@ -59,21 +61,31 @@ const upload = async (req, res) => {
                 durable: true,
             })
 
-            const payload = {
-                filePath: req.file.path,
-                fileName: req.file.filename,
-            };
+            const taskId = uuidv4();
 
-            console.log(req.file.filename);
+            for (const file of req.files) {
+                const payload = {
+                    taskId,
+                    filePath: file.path,
+                    fileName: file.filename,
+                };
 
-            channel.sendToQueue(OCR_QUEUE, Buffer.from(JSON.stringify(payload)));
+                console.log(`Sending file to OCR queue:`, payload);
 
-            res.json({
-                message: "Uploaded successfully. Processing in background...",
+                channel.sendToQueue(OCR_QUEUE, Buffer.from(JSON.stringify(payload)), {
+                    persistent: true,
+                });
+            }
+
+            res.status(200).json({
+                message: "All files uploaded and sent for processing.",
+                taskId,
+                files: req.files.map(f => f.originalname),
             });
         } catch (err) {
+            console.error("Queue error:", err);
             res.status(500).send({
-                message: `Could not process the file: ${req.file?.originalname}. ${err}`,
+                message: `Could not queue the files. ${err}`,
             });
         }
     });
