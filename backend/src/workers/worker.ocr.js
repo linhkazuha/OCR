@@ -1,6 +1,7 @@
 import amqplib from "amqplib";
 import { image2text } from "../utils/ocr.js";
 import 'dotenv/config';
+import fs from 'fs';
 
 const OCR_QUEUE = process.env.OCR_QUEUE_NAME;
 const Translate_QUEUE = process.env.Translate_QUEUE_NAME;
@@ -18,6 +19,10 @@ export const ocrWorker = async () => {
 
     await channel.assertQueue(OCR_QUEUE);
     await channel.assertQueue(Translate_QUEUE);
+
+    //each worker takes 1 message at a time
+    channel.prefetch(1);
+    console.log("OCR Worker: Prefetch count set to 1");
 
     channel.consume(OCR_QUEUE, async (msg) => {
       if (msg !== null) {

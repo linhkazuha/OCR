@@ -17,6 +17,10 @@ export const pdfWorker = async () => {
     await channel.assertQueue(PDF_QUEUE);
     await channel.assertQueue(RESULT_QUEUE);
 
+    //each worker takes 1 message at a time
+    channel.prefetch(1);
+    console.log("PDF Worker: Prefetch count set to 1");
+
     channel.consume(PDF_QUEUE, async (msg) => {
       if (msg !== null) {
         console.log(msg);

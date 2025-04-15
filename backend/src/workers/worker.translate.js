@@ -17,6 +17,10 @@ export const translateWorker = async () => {
     await channel.assertQueue(Translate_QUEUE);
     await channel.assertQueue(PDF_QUEUE);
 
+    //each worker takes 1 message at a time
+    channel.prefetch(1);
+    console.log("Translate Worker: Prefetch count set to 1");
+
     channel.consume(Translate_QUEUE, async (msg) => {
       console.log(msg);
       if (msg !== null) {
