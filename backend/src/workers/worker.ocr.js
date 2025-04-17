@@ -10,9 +10,9 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const ocrWorker = async () => {
     const connection = await amqplib.connect(CloudAMQP_URL);
-    console.log(OCR_QUEUE)
-    console.log(CloudAMQP_URL)
-    console.log(Translate_QUEUE)
+    // console.log(OCR_QUEUE)
+    // console.log(CloudAMQP_URL)
+    // console.log(Translate_QUEUE)
   
     const channel = await connection.createChannel();
 
@@ -21,7 +21,7 @@ export const ocrWorker = async () => {
 
     channel.consume(OCR_QUEUE, async (msg) => {
       if (msg !== null) {
-        console.log(msg);
+        //console.log(msg);
         const { filePath, fileName, taskId } = JSON.parse(msg.content.toString());
 
         const text = await image2text(filePath);

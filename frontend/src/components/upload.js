@@ -5,22 +5,25 @@ const UploadSection = ({ onFileSelected }) => {
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files) return;
 
     // kiểm tra file có phải là ảnh
-    if (!file.type.match('image.*')) {
-      alert('Vui lòng chọn một file hình ảnh');
+    const imageFiles = files.filter(file => file.type.match('image.*'));
+    if (imageFiles.length === 0) {
+      alert('Vui lòng chọn các file hình ảnh');
       return;
     }
 
-    // tạo preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewSrc(e.target.result);
-      onFileSelected(file);
-    };
-    reader.readAsDataURL(file);
+    // // tạo preview
+    // const reader = new FileReader();
+    // reader.onload = (e) => {
+    //   setPreviewSrc(e.target.result);
+    //   onFileSelected(file);
+    // };
+    // reader.readAsDataURL(file);
+    onFileSelected(files);
+    console.log(files);
   };
 
   const handleButtonClick = () => {
@@ -43,6 +46,7 @@ const UploadSection = ({ onFileSelected }) => {
       <input
         type="file"
         accept="image/*"
+        multiple={true}
         onChange={handleFileChange}
         ref={fileInputRef}
         className="file-input"

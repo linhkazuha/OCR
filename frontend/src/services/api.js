@@ -10,9 +10,11 @@ const API = {
    * @param {File} file - The image file to upload
    * @returns {Promise} - Promise with the upload result
    */
-  uploadImage: async (file) => {
+  uploadImage: async (files) => {
     const formData = new FormData();
-    formData.append('file', file);
+    files.forEach(file => {
+      formData.append('files', file);
+    });
     
     try {
       const response = await axios.post(`${API_URL}/file/upload`, formData, {

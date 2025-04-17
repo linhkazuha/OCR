@@ -18,7 +18,7 @@ export const translateWorker = async () => {
     await channel.assertQueue(PDF_QUEUE);
 
     channel.consume(Translate_QUEUE, async (msg) => {
-      console.log(msg);
+      //console.log(msg);
       if (msg !== null) {
         const { text, fileName, taskId } = JSON.parse(msg.content.toString());
 

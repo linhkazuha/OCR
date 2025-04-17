@@ -5,6 +5,7 @@ import { dirname } from 'path';
 import amqplib from 'amqplib';
 import 'dotenv/config';
 import { v4 as uuidv4 } from 'uuid';
+import { getUploadChannel } from "../utils/upload-amqs.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -53,9 +54,8 @@ const upload = async (req, res) => {
         }
 
         try {
-            const connection = await amqplib.connect(CloudAMQP_URL);
 
-            const channel = await connection.createChannel();
+            const channel = getUploadChannel();
             
             channel.assertQueue(OCR_QUEUE, {
                 durable: true,

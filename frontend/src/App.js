@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './assets/styles/App.css';
 import Header from './components/header';
 import UploadSection from './components/upload';
 import DownloadSection from './components/download';
 import TranslateButton from './components/translate';
 import API from './services/api';
+import io from 'socket.io-client';
+
+const socket = io("http://localhost:3001");
 
 function App() {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +18,7 @@ function App() {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
+    console.log(file);
     setPdfUrl(null);
     setFileName(null);
     setError(null);
@@ -22,7 +26,7 @@ function App() {
 
   const handleTranslate = async () => {
     if (!selectedFile) {
-      setError('Vui lòng chọn một file hình ảnh');
+      setError('Vui lòng chọn ít nhất một file hình ảnh');
       return;
     }
 
@@ -57,6 +61,17 @@ function App() {
       window.open(downloadUrl, '_blank');
     }
   };
+
+  useEffect(() => {
+    socket.on("url-ready", (url) => {
+      console.log("PDF is ready to download", url);
+
+    });
+
+    return () => {
+      socket.off("url-ready");
+    };
+  }, []);
 
   return (
     <div className="app">
