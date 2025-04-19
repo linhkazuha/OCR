@@ -16,7 +16,7 @@ function createPDF(text, file_Name) {
     
     // Tạo tên file duy nhất với timestamp
     const timestamp = new Date().getTime();
-    const fileName = `${file_Name}_${timestamp}.pdf`;
+    const fileName = `${file_Name}.pdf`;
     const outputPath = path.join(outputDir, fileName);
     
     const doc = new PDFDocument();

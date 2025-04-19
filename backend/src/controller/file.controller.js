@@ -6,41 +6,55 @@ import amqplib from 'amqplib';
 import 'dotenv/config';
 import { v4 as uuidv4 } from 'uuid';
 import { getUploadChannel } from "../utils/upload-amqs.js";
+import { processFile } from "../services/ocr.service.js";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// const upload = async (req, res) => {
-//     uploadFile(req, res, async (err) => {
-//         if (err) {
-//             console.error("Multer error:", err);
-//             return res.status(400).send({
-//                 message: `File upload error: ${err.message}`,
-//             });
-//         }
-//         if (!req.file) {
-//             return res.status(400).send({ message: "Please upload a file!" });
-//         }
+const upload_without_queue = async (req, res) => {
+    const requestedAt = Date.now();
 
-//         try {
-//             const pdfPath = await processFile(req.file.path);  
-//             res.json({
-//                 message: "Uploaded and processed successfully!",
-//                 pdfUrl: `/output/${path.basename(pdfPath)}`,
-//             });
-//         } catch (err) {
-//             res.status(500).send({
-//                 message: `Could not process the file: ${req.file?.originalname}. ${err}`,
-//             });
-//         }
-//     });
-// };
+    uploadFile(req, res, async (err) => {
+        if (err) {
+            console.error("Multer error:", err);
+            return res.status(400).send({
+                message: `File upload error: ${err.message}`,
+            });
+        }
+        if (!req.files) {
+            return res.status(400).send({ message: "Please upload at least file!" });
+        }
+
+        try {
+            const pdfUrls = [];
+
+            for (const file of req.files) {
+                const pdfPath = await processFile(file.path, file.filename);
+                pdfUrls.push(pdfPath);
+                const logLine = `${Date.now() - requestedAt}\n`;
+                fs.appendFileSync(path.join(__dirname, '..', 'logs', 'withoutQueue_processing_times.csv'), logLine);
+            }
+
+
+            res.json({
+                message: "All files uploaded and processed successfully!",
+                pdfUrls,
+            });
+        } catch (err) {
+            res.status(500).send({
+                message: `Could not process the file: ${req.file?.originalname}. ${err}`,
+            });
+        }
+    });
+};
 
 // Message Queue
 const CloudAMQP_URL = process.env.CloudAMQP_URL;
 const OCR_QUEUE = process.env.OCR_QUEUE_NAME;
 
 const upload = async (req, res) => {
+    const requestedAt = Date.now();
     uploadFile(req, res, async (err) => {
         if (err) {
             console.error("Multer error:", err);
@@ -68,9 +82,10 @@ const upload = async (req, res) => {
                     taskId,
                     filePath: file.path,
                     fileName: file.filename,
+                    requestedAt,
                 };
 
-                console.log(`Sending file to OCR queue:`, payload);
+                //console.log(`Sending file to OCR queue:`, payload);
 
                 channel.sendToQueue(OCR_QUEUE, Buffer.from(JSON.stringify(payload)), {
                     persistent: true,
@@ -104,7 +119,8 @@ const download = (req, res) => {
     });
 };
 
-export default { 
+export default {
+    upload_without_queue,
     upload,
     download
 };

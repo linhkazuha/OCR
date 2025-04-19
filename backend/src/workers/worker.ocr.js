@@ -22,13 +22,13 @@ export const ocrWorker = async () => {
     channel.consume(OCR_QUEUE, async (msg) => {
       if (msg !== null) {
         //console.log(msg);
-        const { filePath, fileName, taskId } = JSON.parse(msg.content.toString());
+        const { filePath, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
 
         const text = await image2text(filePath);
         
         // await delay(5000);
         
-        channel.sendToQueue(Translate_QUEUE, Buffer.from(JSON.stringify({ text, fileName, taskId })), {
+        channel.sendToQueue(Translate_QUEUE, Buffer.from(JSON.stringify({ text, fileName, taskId, requestedAt })), {
           persistent: true,
         });
         

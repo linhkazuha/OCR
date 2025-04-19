@@ -20,13 +20,13 @@ export const translateWorker = async () => {
     channel.consume(Translate_QUEUE, async (msg) => {
       //console.log(msg);
       if (msg !== null) {
-        const { text, fileName, taskId } = JSON.parse(msg.content.toString());
+        const { text, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
 
         const translatedText = await translate(text);
         
         // await delay(5000);
         
-        channel.sendToQueue(PDF_QUEUE, Buffer.from(JSON.stringify({ translatedText, fileName, taskId })), {
+        channel.sendToQueue(PDF_QUEUE, Buffer.from(JSON.stringify({ translatedText, fileName, taskId, requestedAt })), {
           persistent: true,
         });
         

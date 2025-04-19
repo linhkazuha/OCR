@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "loadTestWithQueues": "artillery run src/tests/upload_with_queues.yml --record --key a9_aynaukvacnf72v9my4vjrkr9oogf3nqr",
+    "loadTestWithoutQueue": "artillery run src/tests/upload_without_queue.yml --record --key a9_aynaukvacnf72v9my4vjrkr9oogf3nqr"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "amqplib": "^0.10.7",
+    "artillery": "^2.0.22",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
@@ -21,5 +24,8 @@
     "pdfkit": "^0.15.0",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "artillery-plugin-http-file-uploads": "^0.0.0"
   }
 }

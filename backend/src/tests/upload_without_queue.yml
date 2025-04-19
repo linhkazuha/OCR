@@ -1,0 +1,23 @@
+config:
+  target: "http://localhost:3001/file"
+  processor: "./multipartFormData.mjs"
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      rampTo: 10
+      name: Warm up phase
+    - duration: 20
+      arrivalRate: 10
+      rampTo: 25
+    #   name: Ramp up load
+    # - duration: 10
+    #   arrivalRate: 25
+    #   rampTo: 50
+    #   name: Spike phase
+
+scenarios:
+  - name: Test upload without queue
+    flow:
+      - post:
+          url: "/upload-without-queue"
+          beforeRequest: "addMultipartFormData"
