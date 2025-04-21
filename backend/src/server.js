@@ -39,6 +39,7 @@ server.listen(port, () => {
 });
 
 
+
 // (async () => {
 //     try {
 //         const text = await ocr.image2text("./data/sample.png");

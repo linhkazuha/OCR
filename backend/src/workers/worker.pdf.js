@@ -26,26 +26,66 @@ export const pdfWorker = async () => {
 
     channel.consume(PDF_QUEUE, async (msg) => {
       if (msg !== null) {
-        //console.log(msg);
+        console.log('PDF worker nhận message:', msg.content.toString());
         const { translatedText, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
 
-        const outputFileName = `${taskId}_${fileName.replace(/\.[^/.]+$/, "")}.pdf`;
+        // bắt đầu tạo PDF
+        io.emit("process-update", { 
+          fileName, 
+          taskId, 
+          stage: "pdf",
+          status: "start"
+        });
 
-        const outputFilePath = await createPDF(translatedText, fileName);
-        
-        const logLine = `${Date.now() - requestedAt}\n`;
-        fs.appendFileSync(path.join(__dirname, '..', 'logs', 'processing_times.csv'), logLine);
-        
-        //console.log(`PDF created: ${outputFilePath}`);
-        
-        // await delay(5000);
+        try {
+          const outputFileName = `${taskId}_${fileName.replace(/\.[^/.]+$/, "")}.pdf`;
+          const outputFilePath = await createPDF(translatedText, fileName);
+          
+          const processingTime = Date.now() - requestedAt;
+          const logLine = `${processingTime}\n`;
+          
+          try {
+            const logDir = path.join(__dirname, '..', 'logs');
+            if (!fs.existsSync(logDir)) {
+              fs.mkdirSync(logDir, { recursive: true });
+            }
+            fs.appendFileSync(path.join(logDir, 'processing_times.csv'), logLine);
+          } catch (logError) {
+            console.error('Lỗi khi ghi log:', logError);
+          }
+    
+          console.log(`PDF đã tạo thành công: ${outputFilePath}, thời gian xử lý: ${processingTime}ms`);
+          
+          // PDF đã sẵn sàng
+          io.emit("process-update", { 
+            fileName, 
+            taskId, 
+            stage: "pdf",
+            status: "complete"
+          });
+          
+          io.emit("url-ready", { 
+            outputFilePath,
+            processingTime,
+            fileName,
+            taskId
+          });
+          
+          channel.ack(msg);
+        } catch (error) {
+          console.error('Lỗi khi tạo PDF:', error);
 
-        io.emit("url-ready", outputFilePath);
-        // console.log("PDF ready at:", Date.now() - requestedAt,"ms");
-        
-        channel.ack(msg);
+          io.emit("process-error", { 
+            fileName, 
+            taskId, 
+            stage: "pdf",
+            error: error.message
+          });
+          
+          channel.ack(msg);
+        }
       }
     });
+    
+    console.log('PDF worker đã khởi động và sẵn sàng xử lý');
 };
-
-// pdfWorker();

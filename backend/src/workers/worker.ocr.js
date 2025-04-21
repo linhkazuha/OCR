@@ -1,6 +1,7 @@
 import amqplib from "amqplib";
 import { image2text } from "../utils/ocr.js";
 import 'dotenv/config';
+import { io } from "../server.js";
 
 const OCR_QUEUE = process.env.OCR_QUEUE_NAME;
 const Translate_QUEUE = process.env.Translate_QUEUE_NAME;
@@ -24,9 +25,24 @@ export const ocrWorker = async () => {
         //console.log(msg);
         const { filePath, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
 
+        // Thông báo bắt đầu OCR
+        io.emit("process-update", { 
+          fileName, 
+          taskId, 
+          stage: "ocr",
+          status: "start"
+        });
+  
         const text = await image2text(filePath);
         
-        // await delay(5000);
+        // Thông báo hoàn thành OCR
+        io.emit("process-update", { 
+          fileName, 
+          taskId, 
+          stage: "ocr",
+          status: "complete"
+        });        
+      
         
         channel.sendToQueue(Translate_QUEUE, Buffer.from(JSON.stringify({ text, fileName, taskId, requestedAt })), {
           persistent: true,

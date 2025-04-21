@@ -1,6 +1,7 @@
 import amqplib from "amqplib";
 import { translate } from "../utils/translate.js";
 import 'dotenv/config';
+import { io } from "../server.js";
 
 const Translate_QUEUE = process.env.Translate_QUEUE_NAME;
 const PDF_QUEUE = process.env.PDF_QUEUE_NAME;
@@ -22,7 +23,23 @@ export const translateWorker = async () => {
       if (msg !== null) {
         const { text, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
 
+        // Thông báo bắt đầu dịch
+        io.emit("process-update", { 
+          fileName, 
+          taskId, 
+          stage: "translating",
+          status: "start"
+        });
+
         const translatedText = await translate(text);
+
+        // Thông báo hoàn thành dịch
+        io.emit("process-update", { 
+          fileName, 
+          taskId, 
+          stage: "translating",
+          status: "complete"
+        });
         
         // await delay(5000);
         

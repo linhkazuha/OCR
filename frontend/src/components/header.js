@@ -1,17 +1,19 @@
 import React from 'react';
-import logo from '../assets/icon.png';
+import icon from '../assets/icon.png';
 
 const Header = () => {
   return (
-    <header className="app-header">
-      <div className="app-logo">
-        <img src={logo} alt="Image Translator Logo" />
-        <h1>Image Translator</h1>
+    <div className="header">
+      <div className="logo-container">
+        <img src={icon} alt="Image Translator" className="logo" />
+        <div className="app-name">
+          <h1>Image Translator</h1>
+        </div>
       </div>
-      <div className="app-title">
-        Scan it - Translate it - Done it
+      <div className="tagline">
+        <h2>Scan it - Translate it - Done it</h2>
       </div>
-    </header>
+    </div>
   );
 };
 
