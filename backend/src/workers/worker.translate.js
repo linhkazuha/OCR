@@ -1,7 +1,8 @@
 import amqplib from "amqplib";
 import { translate } from "../utils/translate.js";
 import 'dotenv/config';
-import { io } from "../server.js";
+// import { io } from "../server.js";
+import { getSocketInstance } from "../utils/socket.js";
 
 const Translate_QUEUE = process.env.Translate_QUEUE_NAME;
 const PDF_QUEUE = process.env.PDF_QUEUE_NAME;
@@ -18,10 +19,18 @@ export const translateWorker = async () => {
     await channel.assertQueue(Translate_QUEUE);
     await channel.assertQueue(PDF_QUEUE);
 
+    //each worker takes 1 message at a time
+    channel.prefetch(1);
+    console.log("Translate Worker: Prefetch count set to 1");
+
     channel.consume(Translate_QUEUE, async (msg) => {
       //console.log(msg);
       if (msg !== null) {
         const { text, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
+        const io = getSocketInstance();
+        if (!io) {
+          console.warn("Socket instance is null — unable to emit events");
+        }
 
         // Thông báo bắt đầu dịch
         io.emit("process-update", { 

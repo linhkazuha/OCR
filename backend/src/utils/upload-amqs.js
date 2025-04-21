@@ -1,4 +1,5 @@
 import amqplib from 'amqplib';
+import 'dotenv/config';
 
 const CLOUDAMQP_URL = process.env.CloudAMQP_URL;
 const OCR_QUEUE = process.env.OCR_QUEUE_NAME;

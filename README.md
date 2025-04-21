@@ -1,6 +1,12 @@
 # OCR
 ### Chạy dự án ###
-- chạy backend: di chuyển vào .../backend/src , chạy `node server.js`
+- chạy backend: di chuyển vào .../backend/src , chạy `node server.js` (chạy bình thường)
+- chạy backend với pm2:<br> 
+B1: Cài đặt pm2: `npm install pm2 --D`<br>
+B2: Di chuyển vào /backend chạy `npx pm2 start ecosystem.config.cjs`<br>
+Để xem logs các tiến trình chạy: `npx pm2 logs`<br>
+Để dừng các tiến trình chạy: `npx pm2 stop all`<br>
+Để xóa các tiến trình chạy: `npm pm2 delete all`<br>
 - chạy frontend: di chuyển vào .../frontend, chạy `npm start`
 
 ### Run Tests ###

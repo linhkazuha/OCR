@@ -8,18 +8,21 @@ import 'dotenv/config';
 import { createUploadChannel } from "./utils/upload-amqs.js";
 import { Server } from "socket.io";
 import http from "http";
+import { setSocketInstance } from './utils/socket.js';
 
 const app = express();
 const port = 3001;
 
 const server = http.createServer(app);
 
-export const io = new Server(server, {
+const io = new Server(server, {
     cors: {
       origin: "http://localhost:3000",
       methods: ["GET", "POST"]
     }
-  });
+});
+
+setSocketInstance(io);
 
 app.use(cors());
 app.use(express.json());
@@ -30,15 +33,24 @@ app.get('/', (req, res) => {
 
 // Start all Channel
 createUploadChannel();
-ocrWorker();
-translateWorker();
-pdfWorker();
+// ocrWorker();
+// translateWorker();
+// pdfWorker();
+
+if (process.env.RUN_WORKERS_SEPARATELY !== 'true') {
+  console.log("Starting workers within API server process...");
+  ocrWorker();
+  translateWorker();
+  pdfWorker();
+} else {
+  console.log("Workers are expected to run in separate processes.");
+}
 
 server.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
-
+export { io };
 
 // (async () => {
 //     try {

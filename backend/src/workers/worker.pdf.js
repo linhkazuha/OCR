@@ -1,11 +1,12 @@
 import amqplib from "amqplib";
 import { createPDF } from "../utils/pdf.js";
 import 'dotenv/config';
-import { io } from "../server.js";
+// import { io } from "../server.js";
 import fs from "fs";
 import path from "path";
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { getSocketInstance } from "../utils/socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,10 +25,18 @@ export const pdfWorker = async () => {
     await channel.assertQueue(PDF_QUEUE);
     await channel.assertQueue(RESULT_QUEUE);
 
+    //each worker takes 1 message at a time
+    channel.prefetch(1);
+    console.log("PDF Worker: Prefetch count set to 1");
+
     channel.consume(PDF_QUEUE, async (msg) => {
       if (msg !== null) {
         console.log('PDF worker nhận message:', msg.content.toString());
         const { translatedText, fileName, taskId, requestedAt } = JSON.parse(msg.content.toString());
+        const io = getSocketInstance();
+        if (!io) {
+          console.warn("Socket instance is null — unable to emit events");
+        }
 
         // bắt đầu tạo PDF
         io.emit("process-update", { 
@@ -43,9 +52,11 @@ export const pdfWorker = async () => {
           
           const processingTime = Date.now() - requestedAt;
           const logLine = `${processingTime}\n`;
+          console.log(`[PDF Worker] requestedAt: ${requestedAt}, processingTime: ${processingTime}`);
           
           try {
             const logDir = path.join(__dirname, '..', 'logs');
+            console.log("[PDF Worker] Ghi log vào:", logDir);
             if (!fs.existsSync(logDir)) {
               fs.mkdirSync(logDir, { recursive: true });
             }
