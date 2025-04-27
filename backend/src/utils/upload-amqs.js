@@ -12,6 +12,8 @@ export const createUploadChannel = async () => {
     connection = await amqplib.connect(CLOUDAMQP_URL);
     channel = await connection.createChannel();
     await channel.assertQueue(OCR_QUEUE, { durable: true });
+  } else {
+    console.log('channel is created successfully')
   }
 };
 

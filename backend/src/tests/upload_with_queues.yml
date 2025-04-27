@@ -6,9 +6,9 @@ config:
       arrivalRate: 5
       rampTo: 10
       name: Warm up phase
-    - duration: 10
-      arrivalRate: 10
-      rampTo: 20
+    # - duration: 10
+    #   arrivalRate: 10
+    #   rampTo: 20
     #   name: Ramp up load
     # - duration: 10
     #   arrivalRate: 25
