@@ -24,7 +24,7 @@ const ActionButtons = ({ hasImages, totalImages, images }) => {
       const data = await response.json();
       
       if (response.ok) {
-        console.log('Tải lên thành công:', data);
+        console.log('Upload success:', data);
         
         navigate('/processing', { 
           state: { 
@@ -34,13 +34,13 @@ const ActionButtons = ({ hasImages, totalImages, images }) => {
           } 
         });
       } else {
-        console.error('Lỗi khi tải lên:', data.message);
-        alert(`Lỗi: ${data.message}`);
+        console.error('Error:', data.message);
+        alert(`Error: ${data.message}`);
         setLoading(false);
       }
     } catch (error) {
       console.error('Lỗi khi gửi request:', error);
-      alert('Không thể kết nối đến server. Vui lòng thử lại sau.');
+      alert('Cannot connect with server. Please try again');
       setLoading(false);
     }
   };
@@ -49,7 +49,7 @@ const ActionButtons = ({ hasImages, totalImages, images }) => {
     <div className="action-container">
       {hasImages && (
         <div className="image-count">
-          Số lượng ảnh: {totalImages}
+          Total images: {totalImages}
         </div>
       )}
       
@@ -59,7 +59,7 @@ const ActionButtons = ({ hasImages, totalImages, images }) => {
           disabled={!hasImages || loading}
           onClick={handleProcessWithQueue}
         >
-          {loading ? 'Đang tải lên...' : 'Xử lý với Queue'}
+          {loading ? 'Uploading...' : 'Process with Queue'}
         </button>
       </div>
     </div>

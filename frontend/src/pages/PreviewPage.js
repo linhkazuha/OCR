@@ -25,7 +25,7 @@ const PreviewPage = () => {
     if (validImages.length > 0) {
       setImages(prevImages => [...prevImages, ...validImages]);
     } else {
-      alert('Vui lòng tải lên ảnh có kích thước dưới 2MB');
+      alert('Please upload images that size not over 2MB');
     }
   };
 

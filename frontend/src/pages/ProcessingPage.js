@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import io from 'socket.io-client';
+import ImagePreviewModal from '../components/ImagePreviewModal';
 
 const ProcessingPage = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const ProcessingPage = () => {
   const [results, setResults] = useState({});
   const [socket, setSocket] = useState(null);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const STAGES = {
     WAITING: 'waiting',
@@ -123,7 +125,7 @@ const ProcessingPage = () => {
         console.log('Nhận được url-ready với dữ liệu dạng string:', data);
         const outputFilePath = data;
         const resultFileName = outputFilePath.split('/').pop();
-
+        
         if (location.state.images.length > 0) {
           const firstImageName = location.state.images[0].name;
           setResults(prev => ({
@@ -162,8 +164,9 @@ const ProcessingPage = () => {
         return;
       }
       
-      const resultFileName = outputFilePath.split('/').pop();
-      console.log('Tên file kết quả:', resultFileName);
+      const resultFileName = outputFilePath.split(/[/\\]/).pop();
+      console.log('đường dẫn file:', outputFilePath, "--------------");
+      console.log('tên file:', resultFileName, "--------------");
 
       let matchedImageName = null;
       
@@ -250,33 +253,29 @@ const ProcessingPage = () => {
     }
   };
 
-
   const getStageText = (stage) => {
     switch(stage) {
-      case STAGES.WAITING: return 'Đang đợi';
-      case STAGES.OCR: return 'Đang OCR';
-      case STAGES.TRANSLATING: return 'Đang dịch';
-      case STAGES.PDF: return 'Đang tạo PDF';
-      case STAGES.COMPLETED: return 'Hoàn thành';
-      default: return 'Không xác định';
+      case STAGES.WAITING: return 'waiting';
+      case STAGES.OCR: return 'OCR';
+      case STAGES.TRANSLATING: return 'translating';
+      case STAGES.PDF: return 'pdf';
+      case STAGES.COMPLETED: return 'completed';
+      default: return 'undefined';
     }
   };
-
 
   const isAllCompleted = () => {
     return images.length > 0 && images.every(image => processing[image.name] === STAGES.COMPLETED);
   };
 
-
   const handleBackToHome = () => {
     navigate('/');
   };
   
-
   const handleSampleClick = (e, isSample) => {
     if (isSample) {
       e.preventDefault();
-      alert('Đây là file mẫu cho mục đích demo. Trong môi trường thực tế, liên kết này sẽ tải xuống file PDF thực từ server.');
+      alert('Đây là file mẫu cho mục đích demo. Trong thực tế, liên kết này sẽ tải xuống file PDF thực từ server.');
     }
   };
   
@@ -286,12 +285,20 @@ const ProcessingPage = () => {
     }
   };
 
+  const handleImagePreview = (image) => {
+    setPreviewImage(image);
+  };
+
+  const closePreview = () => {
+    setPreviewImage(null);
+  };
+
   return (
     <div className="processing-page">
       <Header />
       <div className="processing-container">
         <div className="processing-header">
-          <h2>Xử lý ảnh với hàng đợi</h2>
+          <h2>Process with Queue</h2>
           <div className="task-id-info">
             Task ID: <span className="task-id-value">{location.state?.taskId}</span>
             <span className="socket-status" style={{ 
@@ -299,7 +306,7 @@ const ProcessingPage = () => {
               color: socketConnected ? 'green' : 'red',
               fontSize: '12px'
             }}>
-              {socketConnected ? '(đã kết nối)' : '(mất kết nối)'}
+              {socketConnected ? '(connected)' : '(disconnect)'}
             </span>
           </div>
         </div>
@@ -307,9 +314,9 @@ const ProcessingPage = () => {
         <div className="processing-table">
           {/* Tiêu đề cột */}
           <div className="processing-table-header">
-            <div className="column-header source-header">Hình ảnh gốc</div>
-            <div className="column-header progress-header">Tiến trình xử lý</div>
-            <div className="column-header result-header">Kết quả (PDF)</div>
+            <div className="column-header source-header">Images</div>
+            <div className="column-header progress-header">Process</div>
+            <div className="column-header result-header">Results</div>
           </div>
           
           {/* Nội dung bảng - mỗi hàng là một file */}
@@ -318,7 +325,7 @@ const ProcessingPage = () => {
               {/* Cột hình ảnh gốc */}
               <div className="file-cell source-cell">
                 <div className="file-item source-file">
-                  <div className="file-preview">
+                  <div className="file-preview" onClick={() => handleImagePreview(image)}>
                     <img src={URL.createObjectURL(image)} alt={image.name} />
                   </div>
                   <div className="file-details">
@@ -347,28 +354,27 @@ const ProcessingPage = () => {
               <div className="file-cell result-cell">
                 {results[image.name] ? (
                   <div className="file-item result-file">
-                    <div className="file-icon pdf-icon">PDF</div>
                     <div className="file-details">
                       <span className="file-name">{results[image.name].fileName}</span>
-                      <a 
-                        href={results[image.name].downloadUrl} 
-                        className="download-button"
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        onClick={(e) => handleSampleClick(e, results[image.name].isSample)}
-                      >
-                        Tải xuống
-                      </a>
                       <span className="processing-time">
                         {results[image.name].processingTime ? 
-                            `Thời gian xử lý: ${(results[image.name].processingTime / 1000).toFixed(2)}s` : 
+                            `Processing time: ${(results[image.name].processingTime / 1000).toFixed(2)}s` : 
                             ''}
                       </span>
                     </div>
+                    <a 
+                      href={results[image.name].downloadUrl} 
+                      className="download-icon-button"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={(e) => handleSampleClick(e, results[image.name].isSample)}
+                    >
+                      <i className="fas fa-download"></i>
+                    </a>
                   </div>
                 ) : (
                   <div className="file-placeholder">
-                    <span>Đang xử lý...</span>
+                    <span>Processing...</span>
                   </div>
                 )}
               </div>
@@ -378,19 +384,26 @@ const ProcessingPage = () => {
         
         {isAllCompleted() ? (
           <div className="completion-message">
-            <h3>Tất cả các file đã được xử lý thành công!</h3>
+            <h3>All files completed!</h3>
             <button className="process-more-button" onClick={handleBackToHome}>
-              Xử lý thêm ảnh
+              Process more images
             </button>
           </div>
         ) : (
           <div className="processing-controls">
             <button className="cancel-button" onClick={handleCancel}>
-              Hủy và quay lại
+              Cancel
             </button>
           </div>
         )}
       </div>
+
+      {previewImage && (
+        <ImagePreviewModal 
+          image={previewImage} 
+          onClose={closePreview}
+        />
+      )}
     </div>
   );
 };

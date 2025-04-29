@@ -407,7 +407,7 @@ body {
 .column-header {
   flex: 1;
   color: #3c6475;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
   text-align: center;
 }
@@ -482,18 +482,18 @@ body {
   flex-shrink: 0;
 }
 
-.pdf-icon {
+/* .pdf-icon {
   background-color: #f44336;
   color: white;
   border-radius: 4px;
-}
+} */
 
 .file-details {
   flex: 1;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden;
 }
 
 .file-name {
@@ -501,6 +501,8 @@ body {
   color: #333;
   margin-bottom: 5px;
   word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .file-size {
@@ -531,15 +533,21 @@ body {
 }
 
 .progress-text {
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
   text-align: center;
 }
 
 /* Result file styling */
 .result-file {
-  padding: 10px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
 }
 
 .file-placeholder {
@@ -637,8 +645,26 @@ body {
   display: block;
   font-size: 11px;
   color: #666;
-  margin-top: 5px;
   font-style: italic;
+}
+
+/* Nút download mới */
+.download-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #3c6475;
+  color: white;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.download-icon-button:hover {
+  background-color: #2a5d7e;
 }
 
 /* Styles cho nút hủy xử lý và container */
@@ -702,4 +728,104 @@ body {
     width: 100%;
     max-width: 250px;
   }
+}
+
+
+/* CSS cho Image Preview Modal */
+.image-preview-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.image-preview-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-preview-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.image-preview-modal-body {
+  padding: 10px;
+  overflow: auto;
+  max-height: calc(90vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview-modal-body img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.image-preview-modal-footer {
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.image-preview-info {
+  display: flex;
+  justify-content: space-between;
+}
+
+.image-preview-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.image-preview-size {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Tương tác khi hover vào ảnh */
+.file-preview {
+  cursor: pointer;
+  position: relative;
+}
+
+.file-preview:hover:after {
+  content: '👁️';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 16px;
 }
