@@ -1,4 +1,8 @@
 # OCR
+### Thành viên nhóm 15 ###
+- Nguyễn Khánh Linh - 22021158
+- Nguyễn Ngọc Linh - 22028078
+- Đỗ Trọng Bình - 22021196
 ### Chạy dự án ###
 - chạy backend: di chuyển vào .../backend/src , chạy `node server.js` (chạy bình thường)
 - chạy backend với pm2:<br> 
