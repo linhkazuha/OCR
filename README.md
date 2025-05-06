@@ -14,19 +14,19 @@ Hệ thống hiện tại gặp nhiều vấn đề ảnh hưởng đến tính 
 Chạy backend:
 ```bash
 # dùng NodeJS
-docker start rabbitmq
+docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
 cd backend
 node src/server.js
 ```
 ```bash
 # dùng PM2
-docker start rabbitmq
+docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
 cd backend
 npm install pm2 --D # cài đặt PM2
 npx pm2 start ecosystem.config.cjs
 npx pm2 logs # xem logs các tiến trình đang chạy
 npx pm2 stop all # dừng các tiến trình đang chạy
-npm pm2 delete all # xóa các tiến trình đang chạy
+npx pm2 delete all # xóa các tiến trình đang chạy
 ```
 
 Chạy frontend:
@@ -58,6 +58,9 @@ npm run loadTestWithQueues # chạy với queue
     - Warm up phase (10s): Tăng tải từ 5 lên 10 yêu cầu/giây.
     - Ramp up load (20s): Tăng tải từ 10 lên 25 yêu cầu/giây.
     - Spike phase (10s): Tăng tải đột biến từ 25 lên 50 yêu cầu/giây.
+- Tổng số yêu cầu (virtual users created): 800 yêu cầu
+- Mỗi yêu cầu (tương ứng với số vusers) gửi 3 file ảnh (dạng multipart/form-data)
+    
 
 ### Case 1: Hệ thống ban đầu
 ***
@@ -79,7 +82,7 @@ npm run loadTestWithQueues # chạy với queue
 
 <!-- ![alt](/images/case1result.png) -->
 
-**Nhận xét**: Kiến trúc hiện tại không phù hợp khi xử lý tải cao và tác vụ có độ trễ lớn như OCR, dẫn đến tình trạng nghẽn tài nguyên, thời gian phản hồi lâu, và tỷ lệ lỗi cao (98%) do timeout hoặc từ chối kết nối, gây ra trải nghiệm người dùng rất kém và hệ thống thiếu ổn định.
+**Nhận xét**: Kiến trúc hiện tại không phù hợp khi xử lý tải cao và tác vụ có độ trễ lớn như OCR, dẫn đến tình trạng nghẽn tài nguyên, thời gian phản hồi lâu, và tỷ lệ lỗi cao (98%) do timeout hoặc từ chối kết nối (lỗi ETIMEOUT 646 requests và ECONNEREFUSED 138 requests), gây ra trải nghiệm người dùng rất kém và hệ thống thiếu ổn định.
 
 
 ### Case 2: Hệ thống sử dụng Queue với Worker đơn lẻ
@@ -101,7 +104,7 @@ npm run loadTestWithQueues # chạy với queue
 
 <!-- ![alt](/images/case2result.png) -->
 
-**Nhận xét**: Việc sử dụng Queue giúp API endpoint phản hồi nhanh hơn, nhưng lại chuyển điểm nghẽn sang worker phía sau do chỉ có một worker xử lý. Khi tải tăng cao, worker bị quá tải dẫn đến tỷ lệ lỗi vẫn cao (82.9%) và số file xử lý thành công còn thấp hơn cả khi không dùng Queue (63.88%), cho thấy kiến trúc này chưa giải quyết hiệu quả vấn đề tải lớn.
+**Nhận xét**: Việc sử dụng Queue giúp API endpoint phản hồi nhanh hơn, nhưng lại chuyển điểm nghẽn sang worker phía sau do chỉ có một worker xử lý tại mỗi bộ lọc. Khi tải tăng cao, worker bị quá tải dẫn đến tỷ lệ lỗi request vẫn cao (80.875%) (358 requests ETIMEOUT và 289 requests ECONNREFUSED ) và số file xử lý thành công bởi backend còn thấp hơn cả khi không dùng Queue (66.625%), cho thấy kiến trúc này chưa giải quyết hiệu quả vấn đề tải lớn.
 
 
 ### Case 3: Hệ thống sử dụng Queue với nhiều Worker (quản lý bằng PM2)
@@ -128,11 +131,11 @@ npm run loadTestWithQueues # chạy với queue
 ## Tổng kết
 *Bảng 4: So sánh hiệu năng giữa các kiến trúc*
 
-| Kiến trúc | Tỷ lệ lỗi http (%) | Tỉ lệ xử lý (%) | T.gian xử lý TB (ms) |
+| Kiến trúc | Tỷ lệ request lỗi (%) | Tỉ lệ xử lý (%) | T.gian xử lý TB (ms) |
 |:----------|------------------:|----------------:|--------------------:|
 | Không Queue | 98.0 | 82.75 | 71,358.2 |
-| Queue (1 Worker) | 82.9 | 66.625 | 68,062.96 |
-| Queue (Nhiều Worker) | 0.0 | 0.0 | 68,550.07 |
+| Queue (1 Worker) | 80.875 | 66.625 | 68,062.96 |
+| Queue (Nhiều Worker) | 0.0 | 100.0 | 68,550.07 |
 
 <!-- *Thời gian xử lý* -->
 ![alt](/images/linegraph)
