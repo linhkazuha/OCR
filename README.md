@@ -1,11 +1,13 @@
 # CASE STUDY 2. Tối ưu hệ thống OCR
 ## Thành viên nhóm 15 ###
-- Nguyễn Khánh Linh - 22021158
-- Nguyễn Ngọc Linh - 22028078
-- Đỗ Trọng Bình - 22021196
+| Tên | Mã sinh viên | Đóng góp (%) |
+|:----------|---------------:|-------------:|
+| Nguyễn Khánh Linh | 22021158 | 33.33 | 
+| Nguyễn Ngọc Linh | 22028078 | 33.33 | 
+| Đỗ Trọng Bình | 22021196 | 33.33 | 
 
 ## Vấn đề trong hệ thống cũ
-Hệ thống hiện tại gặp nhiều vấn đề ảnh hưởng đến tính sẵn sàng, khả năng mở rộng và trải nghiệm người dùng, như thời gian chờ khi sử dụng Tesseract và Google Translate API, thiếu cơ chế xử lý phân tán khiến hệ thống khó đáp ứng tải lớn, và giao diện chưa cung cấp thông báo lỗi rõ ràng. 
+Hệ thống hiện tại gặp nhiều vấn đề ảnh hưởng đến tính sẵn sàng, khả năng mở rộng và trải nghiệm người dùng, như thời gian xử lý của các tác sử dụng Tesseract và Google Translate API, thiếu cơ chế xử lý phân tán khiến hệ thống khó đáp ứng tải lớn, và giao diện chưa cung cấp thông báo lỗi rõ ràng. 
 
 ## Kiến trúc hệ thống mới
 ![alt](/images/flowchat_ocr.drawio.png)
@@ -35,7 +37,7 @@ cd frontend
 npm start
 ```
 
-## Kiểm thử
+## Kiểm thử 1
 ```bash
 cd backend
 node src/server.js # nếu chạy bằng NodeJS
@@ -143,7 +145,26 @@ npm run loadTestWithQueues # chạy với queue
 Qua thực nghiệm, chúng em thấy rằng: hệ thống không dùng queue hoạt động kém dưới tải cao do dễ tắc nghẽn và lỗi nhiều; dùng queue giúp cải thiện bước tiếp nhận nhưng nếu chỉ có một worker thì vẫn quá tải khi queue đầy; giải pháp hiệu quả nhất là kết hợp queue với nhiều worker song song, giúp xử lý ổn định, chịu tải tốt và đạt hiệu suất tối ưu.
 
 ***
+
+## Kiểm thử 2
+- Thực hiện tải lên 1, 5, 10, 20 và 30 file ảnh và so sánh tổng thời gian xử lý các file của từng kiến trúc
+
+## Kết quả thực nghiệm
+*Bảng 5: So sánh hiệu năng giữa các kiến trúc trường hợp 1 user gửi nhiều file*
+
+| Thời gian xử lý | Không Queue | Queue (1 Worker) | Queue (Nhiều Worker) |
+|:---------------|------------------:|----------------:|-----------------:|
+| 1 file | 0.507 s | 0.570 s | 0.68 s |
+| 5 files | 2.93 s | 1.05 s | 1.15 s |
+| 10 files | 5.87 s | 1.67 s | 1.58 s |
+| 20 files | 14.07 s | 2.85 s | 2.83 s |
+| 30 files | 17.71 s | 4.34 s | 3.47 s |
+
+**Nhận xét**: Trong trường hợp 1 user gửi 1 request gồm nhiều file ảnh đến server, có thể thấy hiệu suất của kiến trúc sử dụng queue và chia các tác vụ thành các bộ lọc xử lý riêng vượt trội hơn hẳn so với kiến trúc ban đầu.
+
 ***
+***
+
 
 <!-- ### Chạy dự án ###
 - chạy backend: di chuyển vào .../backend/src , chạy `node server.js` (chạy bình thường)
